@@ -73,7 +73,10 @@ Git.prototype.handle = function (req, res, next) {
     if (req.method === 'GET'
     && (m = u.pathname.match(/\/([^\/]+)\/info\/refs$/))) {
         var repo = m[1];
-        var repopath = self.checkout ? path.join(repoDir, repo, '.git') : path.join(repoDir, repo)
+        var repopath = self.checkout
+            ? path.join(repoDir, repo, '.git')
+            : path.join(repoDir, repo)
+        ;
         
         if (!params.service) {
             res.statusCode = 400;
@@ -109,7 +112,10 @@ Git.prototype.handle = function (req, res, next) {
     else if (req.method === 'GET'
     && (m = u.pathname.match(/^\/([^\/]+)\/HEAD$/))) {
         var repo = m[1];
-        var repopath = self.checkout ? path.join(repoDir, repo, '.git') : path.join(repoDir, repo)
+        var repopath = self.checkout
+            ? path.join(repoDir, repo, '.git')
+            : path.join(repoDir, repo)
+        ;
         
         var next = function () {
             var file = path.join(repopath, 'HEAD');
@@ -135,7 +141,10 @@ Git.prototype.handle = function (req, res, next) {
     else if (req.method === 'POST'
     && (m = req.url.match(/\/([^\/]+)\/git-(.+)/))) {
         var repo = m[1], service = m[2];
-        var repopath = self.checkout ? path.join(repoDir, repo, '.git') : path.join(repoDir, repo)
+        var repopath = self.checkout
+            ? path.join(repoDir, repo, '.git')
+            : path.join(repoDir, repo)
+        ;
         
         if (services.indexOf(service) < 0) {
             res.statusCode = 405;
@@ -156,12 +165,12 @@ Git.prototype.handle = function (req, res, next) {
         ps.on('exit', function (code) {
             if (service === 'receive-pack') {
                 if (self.checkout) {
-                    exec('git reset --hard', {cwd:path.join(repoDir, repo)}, function () {
+                    var opts = { cwd : path.join(repoDir, repo) };
+                    exec('git reset --hard', opts, function () {
                         self.emit('push', repo);
-                    })
-                } else {
-                    self.emit('push', repo);
+                    });
                 }
+                else self.emit('push', repo)
             }
         });
         

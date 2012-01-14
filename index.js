@@ -39,7 +39,7 @@ Git.prototype.exists = function (repo, cb) {
 Git.prototype.create = function (repo, cb) {
     var cwd = process.cwd();
     var dir = path.join(this.repoDir, repo);
-    if (self.checkout) {
+    if (this.checkout) {
         var ps = spawn('git', [ 'init', dir ]);
     } else {
         var ps = spawn('git', [ 'init', '--bare', dir ]);

@@ -66,6 +66,9 @@ name as the only argument.
 By default, repository targets will be created if they don't exist. You can
 disable that behavior with `opts.autoCreate`.
 
+If `opts.checkout` is true, create and expected checked-out repos instead of
+bare repos.
+
 repos.handle(req, res, next)
 ----------------------------
 

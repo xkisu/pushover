@@ -3,6 +3,8 @@ pushover
 
 Serve up git repositories over http and accept git pushes.
 
+[![build status](https://secure.travis-ci.org/substack/pushover.png)](http://travis-ci.org/substack/pushover)
+
 This library makes it super easy to set up custom git push deploy logic.
 
 example

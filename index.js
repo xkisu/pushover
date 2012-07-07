@@ -38,7 +38,7 @@ Git.prototype.list = function (cb) {
 };
 
 Git.prototype.exists = function (repo, cb) {
-    path.exists(path.join(this.repoDir, repo), cb);
+    (fs.exists || path.exists)(path.join(this.repoDir, repo), cb);
 };
 
 Git.prototype.create = function (repo, cb) {
@@ -104,9 +104,9 @@ Git.prototype.handle = function (req, res, next) {
             serviceRespond(service, repopath, res);
         };
         
-        self.exists(repo, function (exists) {
-            if (!exists && self.autoCreate) self.create(repo, next)
-            else if (!exists) {
+        self.exists(repo, function (ex) {
+            if (!ex && self.autoCreate) self.create(repo, next)
+            else if (!ex) {
                 res.statusCode = 404;
                 res.setHeader('content-type', 'text/plain');
                 res.end('repository not found');
@@ -133,9 +133,9 @@ Git.prototype.handle = function (req, res, next) {
             });
         }
         
-        self.exists(repo, function(exists) {
-            if (!exists && self.autoCreate) self.create(repo, next)
-            else if (!exists) {
+        self.exists(repo, function (ex) {
+            if (!ex && self.autoCreate) self.create(repo, next)
+            else if (!ex) {
                 res.statusCode = 404;
                 res.setHeader('content-type', 'text/plain');
                 res.end('repository not found');

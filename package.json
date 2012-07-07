@@ -24,7 +24,8 @@
         "test" : "tap test/*.js"
     },
     "devDependencies" : {
-        "tap" : "~0.2.5"
+        "tap" : "~0.2.5",
+        "seq" : "~0.3.5"
     },
     "engines" : {
         "node" : ">=0.4.0"

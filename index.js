@@ -7,7 +7,6 @@ var http = require('http');
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 var EventEmitter = require('events').EventEmitter;
-var seq = require('seq');
 
 module.exports = function (repoDir, opts) {
     if (!opts) opts = {};

@@ -124,7 +124,7 @@ Git.prototype.handle = function (req, res, next) {
         
         var next = function () {
             var file = path.join(repopath, 'HEAD');
-            path.exists(file, function (ex) {
+            (fs.exists || path.exists)(file, function (ex) {
                 if (ex) fs.createReadStream(file).pipe(res)
                 else {
                     res.statusCode = 404;
@@ -210,5 +210,14 @@ function serviceRespond (service, file, res) {
     ]);
     ps.stdout.pipe(res, { end : false });
     ps.stderr.pipe(res, { end : false });
-    ps.on('exit', function () { res.end() });
+    
+    (function () {
+        var pending = 3;
+        function onend () {
+            if (--pending === 0) res.end();
+        }
+        ps.on('exit', onend);
+        ps.stdout.on('end', onend);
+        ps.stderr.on('end', onend);
+    })();
 }

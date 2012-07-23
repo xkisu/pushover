@@ -53,7 +53,7 @@ Git.prototype.create = function (repo, cb) {
     var err = '';
     ps.stderr.on('data', function (buf) { err += buf });
     
-    ps.on('exit', function (code) {
+    onexit(ps, function (code) {
         if (!cb) {}
         else if (code) cb(err || true)
         else cb(null)
@@ -167,7 +167,7 @@ Git.prototype.handle = function (req, res, next) {
             repopath,
         ]);
         ps.stdout.pipe(res);
-        ps.on('exit', function (code) {
+        onexit(ps, function (code) {
             if (service === 'receive-pack') {
                 if (self.checkout) {
                     var opts = { cwd : path.join(repoDir, repo) };
@@ -211,13 +211,21 @@ function serviceRespond (service, file, res) {
     ps.stdout.pipe(res, { end : false });
     ps.stderr.pipe(res, { end : false });
     
-    (function () {
-        var pending = 3;
-        function onend () {
-            if (--pending === 0) res.end();
-        }
-        ps.on('exit', onend);
-        ps.stdout.on('end', onend);
-        ps.stderr.on('end', onend);
-    })();
+    onexit(ps, function () { res.end() });
+}
+
+function onexit (ps, cb) {
+    var pending = 3;
+    var code, sig;
+    
+    function onend () {
+        if (--pending === 0) cb(code, sig);
+    }
+    ps.on('exit', function (c, s) {
+        code = c;
+        sig = s;
+    });
+    ps.on('exit', onend);
+    ps.stdout.on('end', onend);
+    ps.stderr.on('end', onend);
 }

@@ -11,12 +11,12 @@ var exec = require('child_process').exec;
 var seq = require('seq');
 
 test('create, push to, and clone a repo', function (t) {
-    t.plan(3);
+    t.plan(4);
     
     var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var dstDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
-    var lastcommit;
+    var lastCommit;
     
     fs.mkdirSync(repoDir, 0700);
     fs.mkdirSync(srcDir, 0700);
@@ -75,8 +75,9 @@ test('create, push to, and clone a repo', function (t) {
         .catch(t.fail)
     ;
     
-    repos.on('push', function (repo, commit) {
+    repos.on('push', function (repo, commit, branch) {
         t.equal(repo, 'doom');
         t.equal(commit, lastCommit);
+        t.equal(branch, 'master');
     });
 });

@@ -3,6 +3,8 @@ var pushover = require('../');
 
 var fs = require('fs');
 var path = require('path');
+var exists = fs.exists || path.exists;
+
 var spawn = require('child_process').spawn;
 
 var seq = require('seq');

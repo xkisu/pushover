@@ -3,6 +3,8 @@ var pushover = require('../');
 
 var fs = require('fs');
 var path = require('path');
+var exists = fs.exists || path.exists;
+
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
 
@@ -61,7 +63,7 @@ test('create, push to, and clone a repo', function (t) {
                 .on('exit', this.ok)
         })
         .seq_(function (next) {
-            path.exists(dstDir + '/doom/a.txt', function (ex) {
+            exists(dstDir + '/doom/a.txt', function (ex) {
                 t.ok(ex, 'a.txt exists');
                 next();
             })

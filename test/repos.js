@@ -4,15 +4,17 @@ var pushover = require('../');
 var fs = require('fs');
 var path = require('path');
 var spawn = require('child_process').spawn;
+var exec = require('child_process').exec;
 
 var seq = require('seq');
 
 test('create, push to, and clone a repo', function (t) {
-    t.plan(2);
+    t.plan(3);
     
     var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var dstDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
+    var lastcommit;
     
     fs.mkdirSync(repoDir, 0700);
     fs.mkdirSync(srcDir, 0700);
@@ -36,8 +38,15 @@ test('create, push to, and clone a repo', function (t) {
         .seq(function () {
             spawn('git', [ 'add', 'a.txt' ]).on('exit', this.ok)
         })
-        .seq(function () {
-            spawn('git', [ 'commit', '-am', 'a!!' ]).on('exit', this.ok)
+        .seq_(function (next) {
+            var ps = spawn('git', [ 'commit', '-am', 'a!!' ]);
+            ps.on('exit', function () {
+                exec('git log | head -n1', function (err, stdout) {
+                    lastCommit = stdout.split(/\s+/)[1];
+                    next();
+                });
+            });
+            ps.stdout.pipe(process.stdout, { end : false });
         })
         .seq(function () {
             var ps = spawn('git', [
@@ -64,7 +73,8 @@ test('create, push to, and clone a repo', function (t) {
         .catch(t.fail)
     ;
     
-    repos.on('push', function (repo) {
+    repos.on('push', function (repo, commit) {
         t.equal(repo, 'doom');
+        t.equal(commit, lastCommit);
     });
 });

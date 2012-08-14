@@ -12,8 +12,11 @@ This library makes it super easy to set up custom git push deploy logic.
 var pushover = require('pushover');
 var repos = pushover(__dirname + '/repos');
 
-repos.on('push', function (repo, commit) {
-    console.log('received a push to ' + repo + '/' + commit);
+repos.on('push', function (repo, commit, branch) {
+    console.log(
+        'received a push to ' + repo + '/' + commit
+        + ' (' + branch + ')'
+    );
 });
 
 repos.listen(7000);
@@ -43,7 +46,7 @@ and then...
 
 ```
 $ node example/simple.js 
-received a push to beep/d5013a53a0e139804e729a12107fc212f11e64c3
+received a push to beep/d5013a53a0e139804e729a12107fc212f11e64c3 (master)
 ```
 
 # methods
@@ -94,10 +97,9 @@ Find out whether `repoName` exists in the callback `cb(exists)`.
 
 # events
 
-## repos.on('push', function (repo, commit) { ... }
+## repos.on('push', function (repo, commit, branch) { ... }
 
-Emitted when somebody does a `git push` to the repo. The repository name `repo`
-and the `commit` hash are the arguments.
+Emitted when somebody does a `git push` to the repo.
 
 # install
 

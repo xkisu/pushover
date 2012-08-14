@@ -1,5 +1,4 @@
-pushover
-========
+# pushover
 
 Serve up git repositories over http and accept git pushes.
 
@@ -7,18 +6,14 @@ Serve up git repositories over http and accept git pushes.
 
 This library makes it super easy to set up custom git push deploy logic.
 
-example
-=======
-
-simple.js
----------
+# example
 
 ``` js
 var pushover = require('pushover');
 var repos = pushover(__dirname + '/repos');
 
-repos.on('push', function (repo) {
-    console.log('received a push to ' + repo);
+repos.on('push', function (repo, commit) {
+    console.log('received a push to ' + repo + '/' + commit);
 });
 
 repos.listen(7000);
@@ -48,22 +43,20 @@ and then...
 
 ```
 $ node example/simple.js 
-received a push to beep
+received a push to beep/d5013a53a0e139804e729a12107fc212f11e64c3
 ```
 
-methods
-=======
+# methods
 
 var pushover = require('pushover')
 
-var repos = pushover(repoDir, opts={autoCreate:true})
------------------------------------------------------
+## var repos = pushover(repoDir, opts={autoCreate:true})
 
 Create a new repository collection from the directory `repoDir`.
 `repoDir` should be entirely empty except for git repo directories.
 
-`repos` is an EventEmitter. Right now it only emits "push" events with the repo
-name as the only argument.
+`repos` is an EventEmitter that emits the events listed below in the events
+section.
 
 By default, repository targets will be created if they don't exist. You can
 disable that behavior with `opts.autoCreate`.
@@ -71,53 +64,52 @@ disable that behavior with `opts.autoCreate`.
 If `opts.checkout` is true, create and expected checked-out repos instead of
 bare repos.
 
-repos.handle(req, res, next)
-----------------------------
+## repos.handle(req, res, next)
 
 Handle incoming HTTP requests with a connect-style middleware.
 
 Everything is admin-party by default.
 Check the credentials further up the stack using basic auth or whatevs.
 
-repos.listen(...)
------------------
+## repos.listen(...)
 
 Create and return a new http server using `repos.handle`.
 
 Any arguments will be passed to `server.listen()`.
 
-repos.create(repoName, cb)
---------------------------
+## repos.create(repoName, cb)
 
 Create a new bare repository `repoName` in the instance repository directory.
 
 Optionally get a callback `cb(err)` to be notified when the repository was
 created.
 
-repos.list(cb) 
---------------
+## repos.list(cb) 
 
 Get a list of all the repositories in the callback `cb(err, repos)`.
 
-repos.exists(repoName, cb)
---------------------------
+## repos.exists(repoName, cb)
 
 Find out whether `repoName` exists in the callback `cb(exists)`.
 
-install
-=======
+# events
+
+## repos.on('push', function (repo, commit) { ... }
+
+Emitted when somebody does a `git push` to the repo. The repository name `repo`
+and the `commit` hash are the arguments.
+
+# install
 
 With [npm](http://npmjs.org) do:
 
     npm install pushover
 
-license
-=======
+# license
 
-MIT/X11
+MIT
 
-kudos
-=====
+# kudos
 
 Reading through
 [grack](https://github.com/schacon/grack/blob/master/lib/git_http.rb)

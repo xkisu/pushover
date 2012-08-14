@@ -172,12 +172,25 @@ Git.prototype.handle = function (req, res, next) {
                 if (self.checkout) {
                     var opts = { cwd : path.join(repoDir, repo) };
                     exec('git reset --hard', opts, function () {
-                        self.emit('push', repo);
+                        self.emit('push', repo, commit);
                     });
                 }
-                else self.emit('push', repo)
+                else self.emit('push', repo, commit)
             }
         });
+        
+        var commit = null;
+        (function () {
+            var data = '';
+            req.on('data', function ondata (buf) {
+                data += buf;
+                var m = data.match(/^[0-9a-fA-F]+ ([0-9a-fA-F]+) /);
+                if (m) {
+                    commit = m[1];
+                    req.removeListener('data', ondata);
+                }
+            });
+        })();
         
         req.pipe(ps.stdin);
         ps.stderr.pipe(process.stderr, { end : false });

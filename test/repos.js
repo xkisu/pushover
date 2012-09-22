@@ -11,7 +11,7 @@ var exec = require('child_process').exec;
 var seq = require('seq');
 
 test('create, push to, and clone a repo', function (t) {
-    t.plan(4);
+    t.plan(7);
     
     var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
@@ -75,9 +75,13 @@ test('create, push to, and clone a repo', function (t) {
         .catch(t.fail)
     ;
     
-    repos.on('push', function (repo, commit, branch) {
-        t.equal(repo, 'doom');
-        t.equal(commit, lastCommit);
-        t.equal(branch, 'master');
+    repos.on('push', function (push, req, res) {
+        t.equal(push.repo, 'doom');
+        t.equal(push.commit, lastCommit);
+        t.equal(push.branch, 'master');
+        
+        t.equal(req.headers.host, 'localhost:' + port);
+        t.equal(req.method, 'POST');
+        t.equal(req.url, '/doom/git-receive-pack');
     });
 });

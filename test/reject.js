@@ -12,7 +12,7 @@ var http = require('http');
 var seq = require('seq');
 
 test('create, push to, and clone a repo', function (t) {
-    t.plan(7);
+    t.plan(8);
     
     var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
@@ -65,6 +65,9 @@ test('create, push to, and clone a repo', function (t) {
             ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', function (code) {
                 t.notEqual(code, 0);
+                exists(repoDir + '/doom', function (ex) {
+                    t.equal(ex, false);
+                });
             });
         })
         .catch(t.fail)

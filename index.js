@@ -167,7 +167,7 @@ Git.prototype.handle = function (req, res, next) {
             '--stateless-rpc',
             repopath,
         ]);
-        ps.stdout.pipe(res);
+        ps.stdout.pipe(res, { end : false });
         onexit(ps, function (code) {
             if (service === 'receive-pack') {
                 var pushObj = makePush({

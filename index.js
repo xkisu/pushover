@@ -3,6 +3,7 @@ var url = require('url');
 var qs = require('querystring');
 var path = require('path');
 var http = require('http');
+var httpDuplex = require('http-duplex');
 
 var spawn = require('child_process').spawn;
 var exec = require('child_process').exec;
@@ -177,10 +178,10 @@ Git.prototype.handle = function (req, res, next) {
                 if (self.checkout) {
                     var opts = { cwd : path.join(repoDir, repo) };
                     exec('git reset --hard', opts, function () {
-                        self.emit('push', pushObj, req, res);
+                        self.emit('push', pushObj);
                     });
                 }
-                else self.emit('push', pushObj, req, res)
+                else self.emit('push', pushObj)
             }
         });
         
@@ -252,8 +253,26 @@ function onexit (ps, cb) {
 }
 
 function makePush (opts, req, res) {
-    var push = opts;
-    push.accept = function () {
+    var push = httpDuplex(req, res);
+    Object.keys(opts).forEach(function (key) {
+        push[key] = opts[key];
+    });
+    
+    push.accept = function (msg) {
+        push.statusCode = 200;
+        if (msg) push.write(msg);
+        push.end();
     };
+    
+    push.reject = function (code, msg) {
+        if (msg === undefined && typeof code === 'string') {
+            msg = code;
+            code = 500;
+        }
+        push.statusCode = code || 500;
+        if (msg) push.write(msg);
+        push.end();
+    };
+    
     return push;
 }

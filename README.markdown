@@ -10,16 +10,17 @@ This library makes it super easy to set up custom git push deploy logic.
 
 ``` js
 var pushover = require('pushover');
-var repos = pushover(__dirname + '/repos');
+var repos = pushover('/tmp/repos');
 
-repos.on('push', function (repo, commit, branch) {
+repos.on('push', function (push) {
     console.log(
-        'received a push to ' + repo + '/' + commit
-        + ' (' + branch + ')'
+        'received a push to ' + push.repo + '/' + push.commit
+        + ' (' + push.branch + ')'
     );
+    push.accept();
 });
 
-repos.listen(7000);
+repos.listen(7005);
 ```
 
 then start up the pushover server...

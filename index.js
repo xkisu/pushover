@@ -169,13 +169,18 @@ Git.prototype.handle = function (req, res, next) {
         ps.stdout.pipe(res);
         onexit(ps, function (code) {
             if (service === 'receive-pack') {
+                var pushObj = makePush({
+                    repo : repo,
+                    commit : commit,
+                    branch : branch
+                }, req, res);
                 if (self.checkout) {
                     var opts = { cwd : path.join(repoDir, repo) };
                     exec('git reset --hard', opts, function () {
-                        self.emit('push', repo, commit, branch);
+                        self.emit('push', pushObj, req, res);
                     });
                 }
-                else self.emit('push', repo, commit, branch)
+                else self.emit('push', pushObj, req, res)
             }
         });
         
@@ -244,4 +249,11 @@ function onexit (ps, cb) {
     ps.on('exit', onend);
     ps.stdout.on('end', onend);
     ps.stderr.on('end', onend);
+}
+
+function makePush (opts, req, res) {
+    var push = opts;
+    push.accept = function () {
+    };
+    return push;
 }

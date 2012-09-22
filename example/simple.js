@@ -9,4 +9,8 @@ repos.on('push', function (push) {
     push.accept();
 });
 
-repos.listen(7005);
+var http = require('http');
+var server = http.createServer(function (req, res) {
+    repos.handle(req, res);
+});
+server.listen(7005);

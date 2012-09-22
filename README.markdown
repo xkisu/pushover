@@ -20,7 +20,11 @@ repos.on('push', function (push) {
     push.accept();
 });
 
-repos.listen(7005);
+var http = require('http');
+var server = http.createServer(function (req, res) {
+    repos.handle(req, res);
+});
+server.listen(7005);
 ```
 
 then start up the pushover server...
@@ -74,12 +78,6 @@ Handle incoming HTTP requests with a connect-style middleware.
 
 Everything is admin-party by default.
 Check the credentials further up the stack using basic auth or whatevs.
-
-## repos.listen(...)
-
-Create and return a new http server using `repos.handle`.
-
-Any arguments will be passed to `server.listen()`.
 
 ## repos.create(repoName, cb)
 

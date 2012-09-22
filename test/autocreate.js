@@ -6,6 +6,7 @@ var path = require('path');
 var exists = fs.exists || path.exists;
 
 var spawn = require('child_process').spawn;
+var http = require('http');
 
 var seq = require('seq');
 
@@ -22,7 +23,10 @@ test('create, push to, and clone a repo', function (t) {
     
     var repos = pushover(repoDir);
     var port = Math.floor(Math.random() * ((1<<16) - 1e4)) + 1e4;
-    var server = repos.listen(port);
+    var server = http.createServer(function (req, res) {
+        repos.handle(req, res);
+    });
+    server.listen(port);
     
     process.chdir(srcDir);
     seq()

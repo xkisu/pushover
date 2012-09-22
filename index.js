@@ -183,6 +183,7 @@ Git.prototype.handle = function (req, res, next) {
                 }
                 else self.emit('push', pushObj)
             }
+            else res.end();
         });
         
         var commit = null, branch = null;

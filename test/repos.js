@@ -75,13 +75,15 @@ test('create, push to, and clone a repo', function (t) {
         .catch(t.fail)
     ;
     
-    repos.on('push', function (push, req, res) {
+    repos.on('push', function (push) {
         t.equal(push.repo, 'doom', 'repo name');
         t.equal(push.commit, lastCommit, 'commit ok');
         t.equal(push.branch, 'master', 'master branch');
         
-        t.equal(req.headers.host, 'localhost:' + port, 'http host');
-        t.equal(req.method, 'POST', 'is a post');
-        t.equal(req.url, '/doom/git-receive-pack', 'receive pack');
+        t.equal(push.headers.host, 'localhost:' + port, 'http host');
+        t.equal(push.method, 'POST', 'is a post');
+        t.equal(push.url, '/doom/git-receive-pack', 'receive pack');
+        
+        push.end();
     });
 });

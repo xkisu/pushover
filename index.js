@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var http = require('http');
+var mkdirp = require('mkdirp');
 
 var spawn = require('child_process').spawn;
 var EventEmitter = require('events').EventEmitter;
@@ -26,6 +27,10 @@ Git.prototype.list = function (cb) {
 
 Git.prototype.exists = function (repo, cb) {
     (fs.exists || path.exists)(path.join(this.repoDir, repo), cb);
+};
+
+Git.prototype.mkdir = function (dir, cb) {
+    mkdirp(path.resolve(this.repoDir, dir), cb);
 };
 
 Git.prototype.create = function (repo, cb) {

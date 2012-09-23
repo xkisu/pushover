@@ -88,6 +88,6 @@ test('create, push to, and clone a repo', function (t) {
         t.equal(push.method, 'POST', 'is a post');
         t.equal(push.url, '/doom/git-receive-pack', 'receive pack');
         
-        push.end();
+        push.accept();
     });
 });

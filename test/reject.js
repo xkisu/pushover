@@ -58,23 +58,26 @@ test('create, push to, and clone a repo', function (t) {
             });
             ps.stdout.pipe(process.stdout, { end : false });
         })
-        .seq(function () {
+        .seq_(function (next) {
             var ps = spawn('git', [
                 'push', 'http://localhost:' + port + '/doom', 'master'
             ]);
             ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', function (code) {
                 t.notEqual(code, 0);
-                
-                var glog = spawn('git', [ 'log' ], { cwd : repoDir + '/doom' });
-                glog.on('exit', function (code) {
-                    t.notEqual(code, 0);
-                });
-                var data = '';
-                glog.stderr.on('data', function (buf) { data += buf });
-                glog.stderr.on('end', function (buf) {
-                    t.ok(/bad default revision 'HEAD'/.test(data));
-                });
+                next();
+            });
+        })
+        .seq(setTimeout, seq, 1000)
+        .seq(function () {
+            var glog = spawn('git', [ 'log' ], { cwd : repoDir + '/doom' });
+            glog.on('exit', function (code) {
+                t.notEqual(code, 0);
+            });
+            var data = '';
+            glog.stderr.on('data', function (buf) { data += buf });
+            glog.stderr.on('end', function (buf) {
+                t.ok(/bad default revision 'HEAD'/.test(data));
             });
         })
         .catch(t.fail)

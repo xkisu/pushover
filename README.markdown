@@ -13,11 +13,15 @@ var pushover = require('pushover');
 var repos = pushover('/tmp/repos');
 
 repos.on('push', function (push) {
-    console.log(
-        'received a push to ' + push.repo + '/' + push.commit
+    console.log('push ' + push.repo + '/' + push.commit
         + ' (' + push.branch + ')'
     );
     push.accept();
+});
+
+repos.on('fetch', function (fetch) {
+    console.log('fetch ' + fetch.commit);
+    fetch.accept();
 });
 
 var http = require('http');
@@ -51,7 +55,19 @@ and then...
 
 ```
 $ node example/simple.js 
-received a push to beep/d5013a53a0e139804e729a12107fc212f11e64c3 (master)
+push beep.git/d5013a53a0e139804e729a12107fc212f11e64c3 (master)
+```
+
+or...
+
+```
+$ git clone http://localhost:7000/beep.git
+```
+
+and then...
+
+```
+fetch beep.git/d5013a53a0e139804e729a12107fc212f11e64c3
 ```
 
 # methods
@@ -72,7 +88,7 @@ disable that behavior with `opts.autoCreate`.
 If `opts.checkout` is true, create and expected checked-out repos instead of
 bare repos.
 
-## repos.handle(req, res, next)
+## repos.handle(req, res)
 
 Handle incoming HTTP requests with a connect-style middleware.
 
@@ -96,15 +112,78 @@ Find out whether `repoName` exists in the callback `cb(exists)`.
 
 # events
 
-## repos.on('push', function (repo, commit, branch) { ... }
+## repos.on('push', function (push) { ... }
 
 Emitted when somebody does a `git push` to the repo.
 
+Exactly one listener must call `push.accept()` or `push.reject()`. If there are
+no listeners, `push.accept()` is called automatically.
+
+`push` is an http duplex object (see below) with these extra properties:
+
+* push.repo
+* push.commit
+* push.branch
+
+## repos.on('fetch', function (fetch) { ... }
+
+Emitted when somebody does a `git fetch` to the repo (which happens whenever you
+do a `git pull` or a `git clone`).
+
+Exactly one listener must call `fetch.accept()` or `fetch.reject()`. If there are
+no listeners, `fetch.accept()` is called automatically.
+
+`fetch` is an http duplex objects (see below) with these extra properties:
+
+* fetch.repo
+* fetch.commit
+
+## repos.on('info', function (info) { ... }
+
+Emitted when the repo is queried for info before doing other commands.
+
+Exactly one listener must call `info.accept()` or `info.reject()`. If there are
+no listeners, `info.accept()` is called automatically.
+
+`info` is an http duplex object (see below) with these extra properties:
+
+* info.repo
+
+## repos.on('head', function (head) { ... }
+
+Emitted when the repo is queried for HEAD before doing other commands.
+
+Exactly one listener must call `head.accept()` or `head.reject()`. If there are
+no listeners, `head.accept()` is called automatically.
+
+`head` is an http duplex object (see below) with these extra properties:
+
+* head.repo
+
+# http duplex objects
+
+The arguments to each of the events `'push'`, `'fetch'`, `'info'`, and `'head'`
+are [http duplex](http://github.com/substack/http-duplex) that act as both http
+server request and http server response objects so you can pipe to and from them.
+
+For every event if there are no listeners `dup.accept()` will be called
+automatically.
+
+## dup.accept()
+
+Accept the pending request.
+
+## dup.reject()
+
+Reject the pending request.
+
 # install
 
-With [npm](http://npmjs.org) do:
+With [npm](https://npmjs.org) do:
 
-    npm install pushover
+```
+npm install pushover
+```
 
 # license
 

@@ -2,11 +2,15 @@ var pushover = require('../');
 var repos = pushover('/tmp/repos');
 
 repos.on('push', function (push) {
-    console.log(
-        'received a push to ' + push.repo + '/' + push.commit
+    console.log('push ' + push.repo + '/' + push.commit
         + ' (' + push.branch + ')'
     );
     push.accept();
+});
+
+repos.on('fetch', function (fetch) {
+    console.log('fetch ' + fetch.repo + '/' + fetch.commit);
+    fetch.accept();
 });
 
 var http = require('http');

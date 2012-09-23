@@ -81,7 +81,7 @@ test('create, push to, and clone a repo', function (t) {
     ;
     
     repos.on('push', function (push) {
-        t.equal(push.repo, 'doom', 'repo name');
+        t.equal(push.repo, 'xyz/doom', 'repo name');
         t.equal(push.commit, lastCommit, 'commit ok');
         t.equal(push.branch, 'master', 'master branch');
         

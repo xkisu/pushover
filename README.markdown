@@ -102,6 +102,10 @@ Create a new bare repository `repoName` in the instance repository directory.
 Optionally get a callback `cb(err)` to be notified when the repository was
 created.
 
+## repos.mkdir(dir, cb)
+
+Create a subdirectory `dir` in the repo dir with an errback `cb(err)`.
+
 ## repos.list(cb) 
 
 Get a list of all the repositories in the callback `cb(err, repos)`.

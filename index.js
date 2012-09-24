@@ -34,22 +34,35 @@ Git.prototype.mkdir = function (dir, cb) {
 };
 
 Git.prototype.create = function (repo, cb) {
+    var self = this;
+    if (typeof cb !== 'function') cb = function () {};
     var cwd = process.cwd();
-    var dir = path.join(this.repoDir, repo);
-    if (this.checkout) {
-        var ps = spawn('git', [ 'init', dir ]);
-    } else {
-        var ps = spawn('git', [ 'init', '--bare', dir ]);
-    }
+    if (/\.\.|^\//.test(repo)) return cb('invalid repo name');
     
-    var err = '';
-    ps.stderr.on('data', function (buf) { err += buf });
-    
-    onexit(ps, function (code) {
-        if (!cb) {}
-        else if (code) cb(err || true)
-        else cb(null)
+    self.exists(repo, function (ex) {
+        if (!ex) self.mkdir(repo, next)
+        else next()
     });
+    
+    function next (err) {
+        if (err) return cb(err);
+        
+        var dir = path.join(self.repoDir, repo);
+        if (self.checkout) {
+            var ps = spawn('git', [ 'init', dir ]);
+        } else {
+            var ps = spawn('git', [ 'init', '--bare', dir ]);
+        }
+        
+        var err = '';
+        ps.stderr.on('data', function (buf) { err += buf });
+        
+        onexit(ps, function (code) {
+            if (!cb) {}
+            else if (code) cb(err || true)
+            else cb(null)
+        });
+    }
 };
 
 Git.prototype.handle = require('./lib/handle');

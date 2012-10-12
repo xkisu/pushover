@@ -12,7 +12,7 @@ var http = require('http');
 var seq = require('seq');
 
 test('create, push to, and clone a repo', function (t) {
-    t.plan(7);
+    t.plan(13);
     
     var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
     var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
@@ -55,8 +55,20 @@ test('create, push to, and clone a repo', function (t) {
             ps.stdout.pipe(process.stdout, { end : false });
         })
         .seq(function () {
+            var ps = spawn('git', ['tag', '0.0.1']);
+            ps.stderr.pipe(process.stderr, { end : false });
+            ps.on('exit', this.ok);
+        })
+        .seq(function () {
             var ps = spawn('git', [
                 'push', 'http://localhost:' + port + '/doom', 'master'
+            ]);
+            ps.stderr.pipe(process.stderr, { end : false });
+            ps.on('exit', this.ok);
+        })
+        .seq(function () {
+            var ps = spawn('git', [
+                'push', '--tags', 'http://localhost:' + port + '/doom'
             ]);
             ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', this.ok);
@@ -89,5 +101,17 @@ test('create, push to, and clone a repo', function (t) {
         t.equal(push.url, '/doom/git-receive-pack', 'receive pack');
         
         push.accept();
+    });
+
+    repos.on('tag', function (tag) {
+        t.equal(tag.repo, 'doom', 'repo name');
+        t.equal(tag.commit, lastCommit, 'commit ok');
+        t.equal(tag.version, '0.0.1', 'tag received');
+
+        t.equal(tag.headers.host, 'localhost:' + port, 'http host');
+        t.equal(tag.method, 'POST', 'is a post');
+        t.equal(tag.url, '/doom/git-receive-pack', 'receive pack');
+
+        tag.accept();
     });
 });

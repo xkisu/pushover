@@ -10,31 +10,40 @@ var http = require('http');
 
 var seq = require('seq');
 
-test('clone into programatic directories', function (t) {
-    t.plan(3);
+var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
+var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
+var dstDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
+var targetDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
+
+fs.mkdirSync(repoDir, 0700);
+fs.mkdirSync(srcDir, 0700);
+fs.mkdirSync(dstDir, 0700);
+fs.mkdirSync(targetDir, 0700);
     
-    var repoDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
-    var srcDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
-    var dstDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
-    var targetDir = '/tmp/' + Math.floor(Math.random() * (1<<30)).toString(16);
-    
-    fs.mkdirSync(repoDir, 0700);
-    fs.mkdirSync(srcDir, 0700);
-    fs.mkdirSync(dstDir, 0700);
-    fs.mkdirSync(targetDir, 0700);
-    
-    var repos = pushover(repoDir);
-    var port = Math.floor(Math.random() * ((1<<16) - 1e4)) + 1e4;
-    var server = http.createServer(function (req, res) {
-        repos.handle(req, res);
+var repos;
+var server = http.createServer(function (req, res) {
+    repos.handle(req, res);
+});
+
+test(function (t) {
+    server.listen(0, function () {
+        setTimeout(t.end.bind(t), 1000);
     });
-    server.listen(port);
+});
+
+test('clone into programatic directories', function (t) {
+    t.plan(9);
+    
+    repos = pushover(function (dir) {
+        t.equal(dir, 'doom');
+        return path.join(targetDir, dir);
+    });
+    var port = server.address().port;
     
     process.chdir(srcDir);
     seq()
         .seq(function () {
             var ps = spawn('git', [ 'init' ]);
-            ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', this.ok);
         })
         .seq(function () {
@@ -50,8 +59,10 @@ test('clone into programatic directories', function (t) {
             var ps = spawn('git', [
                 'push', 'http://localhost:' + port + '/doom', 'master'
             ]);
-            ps.stderr.pipe(process.stderr, { end : false });
             ps.on('exit', this.ok);
+            ps.on('exit', function (code) {
+                t.equal(code, 0);
+            });
         })
         .seq(function () {
             process.chdir(dstDir);
@@ -59,13 +70,13 @@ test('clone into programatic directories', function (t) {
                 .on('exit', this.ok)
         })
         .seq_(function (next) {
-            path.exists(dstDir + '/doom/a.txt', function (ex) {
+            exists(dstDir + '/doom/a.txt', function (ex) {
                 t.ok(ex, 'a.txt exists');
                 next();
             })
         })
         .seq_(function (next) {
-            path.exists(targetDir + '/INFO', function (ex) {
+            exists(targetDir + '/HEAD', function (ex) {
                 t.ok(ex, 'INFO exists');
                 next();
             })
@@ -75,7 +86,7 @@ test('clone into programatic directories', function (t) {
     
     repos.on('push', function (push) {
         t.equal(push.repo, 'doom');
-        push.accept(targetDir);
+        push.accept();
     });
     
     t.on('end', function () {

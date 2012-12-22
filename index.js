@@ -10,11 +10,15 @@ var onexit = require('./lib/onexit');
 
 module.exports = function (repoDir, opts) {
     if (!opts) opts = {};
-    return new Git(repoDir, opts);
+    var dirMap = typeof repoDir === 'function'
+        ? repoDir
+        : function (dir) { return path.join(repoDir, dir) }
+    ;
+    return new Git(dirMap, opts);
 };
 
-function Git (repoDir, opts) {
-    this.repoDir = repoDir;
+function Git (dirMap, opts) {
+    this.dirMap = dirMap;
     this.autoCreate = opts.autoCreate === false ? false : true;
     this.checkout = opts.checkout;
 }
@@ -22,22 +26,21 @@ function Git (repoDir, opts) {
 Git.prototype = new EventEmitter;
 
 Git.prototype.list = function (cb) {
-    fs.readdir(this.repoDir, cb);
+    fs.readdir(this.dirMap(), cb);
 };
 
 Git.prototype.exists = function (repo, cb) {
-    (fs.exists || path.exists)(path.join(this.repoDir, repo), cb);
+    (fs.exists || path.exists)(this.dirMap(repo), cb);
 };
 
 Git.prototype.mkdir = function (dir, cb) {
-    mkdirp(path.resolve(this.repoDir, dir), cb);
+    mkdirp(this.dirMap(dir), cb);
 };
 
 Git.prototype.create = function (repo, cb) {
     var self = this;
     if (typeof cb !== 'function') cb = function () {};
     var cwd = process.cwd();
-    if (/\.\.|^\//.test(repo)) return cb('invalid repo name');
     
     self.exists(repo, function (ex) {
         if (!ex) self.mkdir(repo, next)
@@ -47,10 +50,11 @@ Git.prototype.create = function (repo, cb) {
     function next (err) {
         if (err) return cb(err);
         
-        var dir = path.join(self.repoDir, repo);
+        var dir = self.dirMap(repo);
         if (self.checkout) {
             var ps = spawn('git', [ 'init', dir ]);
-        } else {
+        }
+        else {
             var ps = spawn('git', [ 'init', '--bare', dir ]);
         }
         

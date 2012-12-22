@@ -79,8 +79,13 @@ var pushover = require('pushover')
 Create a new repository collection from the directory `repoDir`.
 `repoDir` should be entirely empty except for git repo directories.
 
-`repos` is an EventEmitter that emits the events listed below in the events
-section.
+If `repoDir` is a function, `repoDir(repo)` will be used to dynamically resolve
+project directories. The return value of `repoDir(repo)` should be a string path
+specifying where to put the string `repo`. Make sure to return the same value
+for `repo` every time since `repoDir(repo)` will be called multiple times.
+
+The return value, `repos` is an EventEmitter that emits the events listed below
+in the events section.
 
 By default, repository targets will be created if they don't exist. You can
 disable that behavior with `opts.autoCreate`.

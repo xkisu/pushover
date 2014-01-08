@@ -184,6 +184,23 @@ no listeners, `head.accept()` is called automatically.
 
 * head.repo
 
+## push.on('response', function(response, done) { ... })
+
+Emitted when pushover creates a resposne stream that will be sent to the git client on the other end.
+
+This should really only be used if you want to send verbose or error messages to the remote git client.
+
+`response` is a writable stream that can accept buffers containing git packfile sidechannel transfer protocol encoded strings. `done` is a callback that must be called when you want to end the response.
+
+If you create a response listener then you must either call the `done` function or execute the following end sequence when you want to end the response:
+
+```js
+response.queue(new Buffer('0000'))
+response.queue(null)
+```
+
+If you never use the response event then the above data will be sent by default. Binding a listener to the response event will prevent the end sequence those from being sent, so you must send them yourself after sending any other messages. 
+
 # http duplex objects
 
 The arguments to each of the events `'push'`, `'fetch'`, `'info'`, and `'head'`

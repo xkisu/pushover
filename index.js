@@ -2,7 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 var mkdirp = require('mkdirp');
-var util = require('util');
+var inherits = require('inherits');
 
 var spawn = require('child_process').spawn;
 var EventEmitter = require('events').EventEmitter;
@@ -26,7 +26,7 @@ function Git (dirMap, opts) {
     this.checkout = opts.checkout;
 }
 
-util.inherits(Git, EventEmitter);
+inherits(Git, EventEmitter);
 
 Git.prototype.list = function (cb) {
     fs.readdir(this.dirMap(), cb);

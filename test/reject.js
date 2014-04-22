@@ -5,7 +5,17 @@ var fs = require('fs');
 var path = require('path');
 var exists = fs.exists || path.exists;
 
-var spawn = require('child_process').spawn;
+var spawn_ = require('child_process').spawn;
+function spawn (cmd, args, opts) {
+    var ps = spawn_(cmd, args, opts);
+    ps.on('error', function (err) {
+        console.error(
+            err.message + ' while executing: '
+            + cmd + ' ' + args.join(' ')
+        );
+    });
+    return ps;
+}
 var exec = require('child_process').exec;
 var http = require('http');
 
